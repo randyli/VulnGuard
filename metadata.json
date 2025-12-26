@@ -1,0 +1,5 @@
+{
+  "name": "VulnGuard AI",
+  "description": "Next-gen SAST platform integrating SARIF ingestion with Gemini AI for automated remediation and Git workflow integration.",
+  "requestFramePermissions": []
+}
