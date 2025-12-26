@@ -1,4 +1,4 @@
-import { Project, Severity, IssueStatus } from "../types";
+import { Project, Severity, IssueStatus, Ruleset } from "../types";
 
 export const MOCK_PROJECTS: Project[] = [
   {
@@ -71,4 +71,44 @@ export const MOCK_PROJECTS: Project[] = [
     lastScan: "2023-10-26T14:15:00Z",
     issues: []
   }
+];
+
+export const MOCK_RULESETS: Ruleset[] = [
+    {
+        id: 'owasp-top-10',
+        name: 'OWASP Top 10 (2021)',
+        description: 'Standard awareness document for developers and web application security.',
+        enabled: true,
+        provider: 'Standard',
+        rules: [
+            { id: 'A01', name: 'Broken Access Control', description: 'Restrictions on what authenticated users are allowed to do are not properly enforced.', severity: Severity.CRITICAL, enabled: true },
+            { id: 'A03', name: 'Injection', description: 'User supplied data is not validated, filtered, or sanitized by the application.', severity: Severity.CRITICAL, enabled: true },
+            { id: 'A07', name: 'Identification and Authentication Failures', description: 'Confirmation of the user\'s identity, authentication, and session management is critical.', severity: Severity.HIGH, enabled: true },
+             { id: 'A04', name: 'Insecure Design', description: 'Risks related to design and architectural flaws.', severity: Severity.HIGH, enabled: true },
+             { id: 'A09', name: 'Security Logging and Monitoring Failures', description: 'Failures to log, monitor, or report security events.', severity: Severity.MEDIUM, enabled: true },
+        ]
+    },
+    {
+        id: 'sans-25',
+        name: 'SANS Top 25',
+        description: 'The most dangerous software errors.',
+        enabled: false,
+        provider: 'Standard',
+        rules: [
+             { id: 'CWE-89', name: 'SQL Injection', description: 'Improper Neutralization of Special Elements used in an SQL Command.', severity: Severity.CRITICAL, enabled: true },
+             { id: 'CWE-79', name: 'Cross-site Scripting', description: 'Improper Neutralization of Input During Web Page Generation.', severity: Severity.HIGH, enabled: true },
+             { id: 'CWE-20', name: 'Improper Input Validation', description: 'Ensure input is validated before use.', severity: Severity.MEDIUM, enabled: true },
+        ]
+    },
+     {
+        id: 'company-custom',
+        name: 'Acme Corp Specifics',
+        description: 'Internal security guidelines for Acme Corp.',
+        enabled: true,
+        provider: 'Custom',
+        rules: [
+             { id: 'ACME-001', name: 'No Hardcoded API Keys', description: 'Scan for specific internal API key patterns.', severity: Severity.CRITICAL, enabled: true },
+             { id: 'ACME-002', name: 'Logger Configuration', description: 'Ensure logging is set to INFO or above in production.', severity: Severity.LOW, enabled: true },
+        ]
+    }
 ];

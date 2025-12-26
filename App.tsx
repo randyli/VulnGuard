@@ -6,6 +6,7 @@ import { IssueDetail } from './components/IssueDetail';
 import { IntegrationSettings } from './components/IntegrationSettings';
 import { NewProject } from './components/NewProject';
 import { GitManager } from './components/GitManager';
+import { RulesetConfig } from './components/RulesetConfig';
 import { MOCK_PROJECTS } from './services/mockData';
 import { SastIssue, Project } from './types';
 import { ChevronDown, Folder, Check, Bell, UserCircle } from 'lucide-react';
@@ -89,7 +90,11 @@ export default function App() {
       case 'settings':
           return <div className="p-8 text-slate-400 h-full overflow-y-auto">System settings placeholder</div>
       case 'rules':
-          return <div className="p-8 text-slate-400 h-full overflow-y-auto">Ruleset configuration placeholder</div>
+          return (
+             <div className="h-full overflow-y-auto">
+                <RulesetConfig />
+             </div>
+          );
       default:
         return (
             <div className="h-full overflow-y-auto">

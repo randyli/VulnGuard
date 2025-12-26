@@ -45,3 +45,20 @@ export interface Project {
   lastScan: string;
   issues: SastIssue[];
 }
+
+export interface SecurityRule {
+  id: string;
+  name: string;
+  description: string;
+  severity: Severity;
+  enabled: boolean;
+}
+
+export interface Ruleset {
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  provider: 'Standard' | 'Custom';
+  rules: SecurityRule[];
+}
