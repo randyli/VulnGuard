@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, LayoutDashboard, GitGraph, Settings, Code2, Plus } from 'lucide-react';
+import { ShieldAlert, LayoutDashboard, GitGraph, Settings, Code2, Plus, GitBranch } from 'lucide-react';
 
 interface SidebarProps {
   currentView: string;
@@ -10,6 +10,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'issues', label: 'Vulnerabilities', icon: ShieldAlert },
+    { id: 'repository', label: 'Repository', icon: GitBranch },
     { id: 'integrations', label: 'Integrations', icon: GitGraph },
     { id: 'rules', label: 'Rulesets', icon: Code2 },
     { id: 'settings', label: 'Settings', icon: Settings },

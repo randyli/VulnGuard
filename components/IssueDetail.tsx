@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { SastIssue, AIFixResponse, Severity } from '../types';
 import { analyzeIssueWithGemini } from '../services/geminiService';
-import { ArrowLeft, BrainCircuit, GitPullRequest, Copy, Check, Terminal, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { createBranch } from '../services/gitService';
+import { ArrowLeft, BrainCircuit, GitPullRequest, Copy, Check, Terminal, ExternalLink, CheckCircle2, GitBranch } from 'lucide-react';
 
 interface IssueDetailProps {
   issue: SastIssue;
@@ -9,11 +10,13 @@ interface IssueDetailProps {
 }
 
 export const IssueDetail: React.FC<IssueDetailProps> = ({ issue, onBack }) => {
-  const [aiAnalysis, setAiAnalysis] = useState<AIFixResponse | null>(null);
+  // Initialize with existing analysis if available
+  const [aiAnalysis, setAiAnalysis] = useState<AIFixResponse | null>(issue.aiAnalysis || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [prStatus, setPrStatus] = useState<'idle' | 'creating' | 'created'>('idle');
+  const [branchStatus, setBranchStatus] = useState<'idle' | 'creating' | 'created'>('idle');
 
   const handleAnalyze = async () => {
     setLoading(true);
@@ -26,6 +29,13 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue, onBack }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCreateBranch = async () => {
+      setBranchStatus('creating');
+      const branchName = `fix/${issue.ruleId.toLowerCase().replace(/_/g, '-')}-${issue.id.split('_')[1]}`;
+      await createBranch('current', branchName);
+      setBranchStatus('created');
   };
 
   const handleCreatePR = () => {
@@ -168,26 +178,49 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue, onBack }) => {
                     </div>
 
                     {/* Action Card */}
-                    <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                         <div>
-                             <h4 className="font-medium text-white">Ready to apply?</h4>
-                             <p className="text-sm text-slate-400">Create a merge request in GitLab to resolve this issue.</p>
+                    <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
+                         <h4 className="font-medium text-white mb-4">Remediation Actions</h4>
+                         
+                         <div className="flex flex-col sm:flex-row gap-4">
+                            {/* Create Branch Button */}
+                             <button 
+                                onClick={handleCreateBranch}
+                                disabled={branchStatus !== 'idle'}
+                                className={`flex-1 px-4 py-2.5 rounded-lg font-medium flex items-center justify-center transition-all ${
+                                    branchStatus === 'created'
+                                    ? 'bg-slate-700 text-green-400 border border-green-500/30 cursor-default'
+                                    : branchStatus === 'creating'
+                                    ? 'bg-slate-800 text-slate-400 border border-slate-700 cursor-wait'
+                                    : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-600'
+                                }`}
+                             >
+                                 {branchStatus === 'idle' && <><GitBranch className="w-4 h-4 mr-2" /> Create Fix Branch</>}
+                                 {branchStatus === 'creating' && <span className="animate-pulse">Creating Branch...</span>}
+                                 {branchStatus === 'created' && <><Check className="w-4 h-4 mr-2" /> Branch Created</>}
+                             </button>
+
+                             {/* Create PR Button */}
+                             <button 
+                                onClick={handleCreatePR}
+                                disabled={prStatus !== 'idle' || branchStatus !== 'created'} // Enforce branch creation first for realism? Or let them tap it anyway for demo fluidity. Let's assume branch auto-created if skipped, but disabling looks better. Actually, users might want to skip the explicit step in a demo. I'll enable it but if branch not created, maybe just do both. For simplicity, just enable.
+                                className={`flex-1 px-4 py-2.5 rounded-lg font-medium flex items-center justify-center transition-all ${
+                                    prStatus === 'created' 
+                                    ? 'bg-green-600 text-white cursor-default' 
+                                    : prStatus === 'creating'
+                                    ? 'bg-slate-700 text-slate-300 cursor-wait'
+                                    : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20'
+                                }`}
+                             >
+                                {prStatus === 'idle' && <><GitPullRequest className="w-4 h-4 mr-2" /> Create Merge Request</>}
+                                {prStatus === 'creating' && <span className="animate-pulse">Creating MR...</span>}
+                                {prStatus === 'created' && <><Check className="w-4 h-4 mr-2" /> MR Created!</>}
+                             </button>
                          </div>
-                         <button 
-                            onClick={handleCreatePR}
-                            disabled={prStatus !== 'idle'}
-                            className={`px-5 py-2.5 rounded-lg font-medium flex items-center transition-all ${
-                                prStatus === 'created' 
-                                ? 'bg-green-600 text-white cursor-default' 
-                                : prStatus === 'creating'
-                                ? 'bg-slate-700 text-slate-300 cursor-wait'
-                                : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20'
-                            }`}
-                         >
-                            {prStatus === 'idle' && <><GitPullRequest className="w-5 h-5 mr-2" /> Create Merge Request</>}
-                            {prStatus === 'creating' && <span className="animate-pulse">Creating...</span>}
-                            {prStatus === 'created' && <><Check className="w-5 h-5 mr-2" /> MR Created!</>}
-                         </button>
+                         {branchStatus === 'created' && (
+                             <p className="text-xs text-slate-500 mt-3 text-center">
+                                 Branch <span className="font-mono text-slate-400">fix/{issue.ruleId.toLowerCase().replace(/_/g, '-')}-{issue.id.split('_')[1]}</span> created.
+                             </p>
+                         )}
                     </div>
                 </div>
             )}

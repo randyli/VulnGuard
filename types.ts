@@ -13,6 +13,12 @@ export enum IssueStatus {
   IGNORED = 'Ignored',
 }
 
+export interface AIFixResponse {
+  analysis: string;
+  suggestedFix: string;
+  explanation: string;
+}
+
 // Simplified internal representation of a SAST issue
 export interface SastIssue {
   id: string;
@@ -28,6 +34,7 @@ export interface SastIssue {
   toolName: string;
   remediation?: string; // AI Suggestion
   fixedCode?: string; // AI Code Fix
+  aiAnalysis?: AIFixResponse; // Structured AI Analysis
 }
 
 export interface Project {
@@ -37,10 +44,4 @@ export interface Project {
   provider: 'github' | 'gitlab' | 'azure';
   lastScan: string;
   issues: SastIssue[];
-}
-
-export interface AIFixResponse {
-  analysis: string;
-  suggestedFix: string;
-  explanation: string;
 }

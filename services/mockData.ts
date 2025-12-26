@@ -19,6 +19,11 @@ export const MOCK_PROJECTS: Project[] = [
         startLine: 45,
         toolName: "ESLint Security",
         snippet: "const query = \"SELECT * FROM users WHERE email = '\" + req.body.email + \"'\";",
+        aiAnalysis: {
+            analysis: "The code directly concatenates the `req.body.email` user input into a SQL query string. This is a classic SQL Injection vulnerability, allowing an attacker to manipulate the query logic (e.g., by entering `' OR '1'='1`) to bypass authentication or access unauthorized data.",
+            suggestedFix: "const query = \"SELECT * FROM users WHERE email = ?\";\nawait db.execute(query, [req.body.email]);",
+            explanation: "The fix uses a parameterized query (placeholder `?`). The database driver treats the input strictly as data, not executable code, effectively neutralizing the injection vector."
+        }
       },
       {
         id: "issue_02",
