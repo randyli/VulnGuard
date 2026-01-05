@@ -1,20 +1,51 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# VulnGuard AI
 
-# Run and deploy your AI Studio app
+VulnGuard AI is a next-generation Static Application Security Testing (SAST) platform that integrates standard security scanning with advanced AI capabilities. It streamlines the vulnerability management process by not only identifying issues but also providing context-aware AI analysis and automated code remediation suggestions using Google's Gemini models.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1TOpyXkargKavZf8oEwoc-V0BGiWTBnZR
+*   **Centralized Dashboard**: Visualizes security posture with severity metrics, charts, and vulnerability trends.
+*   **Vulnerability Management**: Detailed tracking of SAST issues including severity levels, file location, tool origin, and status.
+*   **AI-Powered Remediation**: Leverages the `gemini-3-pro-preview` model to analyze vulnerable code snippets, explain the security flaw, and generate secure code fixes.
+*   **Ruleset Configuration**: Manage and customize security rulesets (e.g., OWASP Top 10, SANS Top 25, Custom Company Rules).
+*   **Git Workflow Integration**: Simulate Git actions such as creating fix branches and pull requests directly from the remediation interface.
+*   **Multi-Provider Support**: Designed to integrate with GitHub, GitLab, and Azure DevOps.
 
-## Run Locally
+## Tech Stack
 
-**Prerequisites:**  Node.js
+*   **Frontend**: React 19, TypeScript
+*   **Styling**: Tailwind CSS
+*   **AI Integration**: Google GenAI SDK (`@google/genai`)
+*   **Visualization**: Recharts
+*   **Icons**: Lucide React
 
+## Getting Started
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Prerequisites
+
+*   Node.js and npm/yarn/pnpm.
+*   A Google Gemini API Key.
+
+### Installation
+
+1.  Clone the repository.
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+3.  Set up your environment variables. The application requires `process.env.API_KEY` to be set with your Google GenAI API key.
+
+4.  Start the development server:
+    ```bash
+    npm start
+    ```
+
+## Usage
+
+1.  **Dashboard**: Upon launching, you are presented with the security overview of the active project.
+2.  **Switch Projects**: Use the dropdown in the header to switch between projects or create a new one.
+3.  **View Vulnerabilities**: Navigate to the "Vulnerabilities" tab to see a list of issues. Click on any issue to view details.
+4.  **AI Analysis**: inside an issue detail view, click the "Generate Fix Suggestion" button. Gemini will analyze the code snippet and provide a secure fix.
+5.  **Apply Fixes**: Use the "Create Fix Branch" and "Create Merge Request" buttons to simulate the remediation workflow.
+6.  **Manage Rules**: Go to the "Rulesets" page to toggle specific security rules or entire standards like OWASP Top 10.

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Project, SastIssue, Severity, IssueStatus } from '../types';
-import { AlertCircle, FileCode, ChevronRight, CheckCircle2, Search, BrainCircuit } from 'lucide-react';
+import { AlertCircle, FileCode, ChevronRight, CheckCircle2, Search, BrainCircuit, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface IssueListProps {
   project: Project;
@@ -10,6 +10,20 @@ interface IssueListProps {
 export const IssueList: React.FC<IssueListProps> = ({ project, onSelectIssue }) => {
   const [filter, setFilter] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState<IssueStatus | 'All'>('All');
+  const [expandedInsights, setExpandedInsights] = React.useState<Set<string>>(new Set());
+
+  const toggleInsight = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setExpandedInsights(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   const filteredIssues = project.issues.filter(issue => {
     const matchesSearch = issue.title.toLowerCase().includes(filter.toLowerCase()) || 
@@ -95,14 +109,25 @@ export const IssueList: React.FC<IssueListProps> = ({ project, onSelectIssue }) 
                     <div className="font-medium text-slate-200">{issue.title}</div>
                     <div className="text-xs text-slate-500 mt-1 mb-2">{issue.ruleId}</div>
                     {issue.aiAnalysis && (
-                      <div className="mt-2 bg-indigo-950/40 border border-indigo-500/20 rounded-lg p-3 max-w-xl group-hover:border-indigo-500/40 transition-colors">
-                        <div className="flex items-center gap-2 mb-1.5">
-                            <BrainCircuit className="w-3.5 h-3.5 text-indigo-400" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300">AI Insight</span>
-                        </div>
-                        <p className="text-sm text-slate-300 line-clamp-2 leading-relaxed">
-                            {issue.aiAnalysis.analysis}
-                        </p>
+                      <div className="mt-2">
+                         <button
+                            onClick={(e) => toggleInsight(e, issue.id)}
+                            className={`flex items-center space-x-1.5 px-2 py-1 rounded-md text-xs font-medium transition-all border ${
+                                expandedInsights.has(issue.id)
+                                ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+                                : 'bg-indigo-500/10 text-indigo-400 border-transparent hover:bg-indigo-500/20 hover:border-indigo-500/20'
+                            }`}
+                         >
+                            <BrainCircuit className="w-3.5 h-3.5" />
+                            <span>AI Insight</span>
+                            {expandedInsights.has(issue.id) ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                         </button>
+
+                         {expandedInsights.has(issue.id) && (
+                            <div className="mt-2 p-3 bg-indigo-950/30 border border-indigo-500/20 rounded-lg text-sm text-slate-300 leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200" onClick={(e) => e.stopPropagation()}>
+                                {issue.aiAnalysis.analysis}
+                            </div>
+                         )}
                       </div>
                     )}
                   </td>
