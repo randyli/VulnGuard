@@ -49,3 +49,7 @@ VulnGuard AI is a next-generation Static Application Security Testing (SAST) pla
 4.  **AI Analysis**: inside an issue detail view, click the "Generate Fix Suggestion" button. Gemini will analyze the code snippet and provide a secure fix.
 5.  **Apply Fixes**: Use the "Create Fix Branch" and "Create Merge Request" buttons to simulate the remediation workflow.
 6.  **Manage Rules**: Go to the "Rulesets" page to toggle specific security rules or entire standards like OWASP Top 10.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
