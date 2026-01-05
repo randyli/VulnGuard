@@ -50,6 +50,40 @@ VulnGuard AI is a next-generation Static Application Security Testing (SAST) pla
 5.  **Apply Fixes**: Use the "Create Fix Branch" and "Create Merge Request" buttons to simulate the remediation workflow.
 6.  **Manage Rules**: Go to the "Rulesets" page to toggle specific security rules or entire standards like OWASP Top 10.
 
+## Development Roadmap
+
+We welcome contributors to help us evolve VulnGuard AI. Here is our current roadmap:
+
+### Phase 1: Core Functionality (Current)
+- [x] UI/UX Implementation (Dashboard, Issue List, Details).
+- [x] Mock Data Integration.
+- [x] Gemini AI Integration for remediation suggestions.
+- [ ] Unit and Integration Tests for frontend components.
+
+### Phase 2: Backend Integration
+- [ ] Implement a Node.js/Express backend.
+- [ ] Real SARIF file ingestion and parsing.
+- [ ] Database integration (PostgreSQL) for persisting projects and issues.
+- [ ] Live GitHub/GitLab API connections for real branch/PR creation.
+
+### Phase 3: Advanced AI & Automation
+- [ ] "Fix All" capability for specific rule types.
+- [ ] Chat interface for interactive security auditing.
+- [ ] Fine-tuning Gemini models on secure coding standards.
+
+### Phase 4: Enterprise Features
+- [ ] Role-Based Access Control (RBAC).
+- [ ] SSO Integration (Okta, Auth0).
+- [ ] Custom Reporting (PDF/CSV exports).
+
+## Contributing
+
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/amazing-feature`).
+3. Commit your changes (`git commit -m 'Add some amazing feature'`).
+4. Push to the branch (`git push origin feature/amazing-feature`).
+5. Open a Pull Request.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
