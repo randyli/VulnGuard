@@ -5,24 +5,26 @@ import { SastIssue, AIFixResponse } from "../types";
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const analyzeIssueWithGemini = async (issue: SastIssue): Promise<AIFixResponse> => {
-  const modelId = "gemini-3-flash-preview"; 
+  // Using gemini-3-pro-preview for better coding and reasoning capabilities
+  const modelId = "gemini-3-pro-preview"; 
 
   const prompt = `
-    You are a Senior Security Engineer and Code Reviewer. 
     Analyze the following Static Application Security Testing (SAST) issue.
     
-    Issue: ${issue.title}
+    Issue Title: ${issue.title}
+    Vulnerability Type (Rule ID): ${issue.ruleId}
+    File Path: ${issue.filePath}
     Description: ${issue.description}
-    Rule ID: ${issue.ruleId}
-    File: ${issue.filePath}
     
-    Vulnerable Code Snippet:
+    Vulnerable Code:
     \`\`\`
     ${issue.snippet}
     \`\`\`
     
-    Provide a detailed analysis, a secure code fix, and an explanation of why the fix works.
-    Return the response in JSON format.
+    Task:
+    1. Explain the vulnerability in the context of this code.
+    2. Provide a specific, secure code fix that replaces the vulnerable snippet.
+    3. Explain why the fix is secure.
   `;
 
   try {
@@ -30,21 +32,22 @@ export const analyzeIssueWithGemini = async (issue: SastIssue): Promise<AIFixRes
       model: modelId,
       contents: prompt,
       config: {
+        systemInstruction: "You are an expert Application Security Engineer. You provide precise, secure code remediation. Your explanations are concise and educational.",
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
             analysis: {
               type: Type.STRING,
-              description: "Brief analysis of the vulnerability context."
+              description: "A concise analysis of why the code is vulnerable."
             },
             suggestedFix: {
               type: Type.STRING,
-              description: "The corrected code snippet."
+              description: "The corrected code block. Do not include markdown backticks."
             },
             explanation: {
               type: Type.STRING,
-              description: "Why this fix resolves the security issue."
+              description: "A brief explanation of the security mechanism in the fix."
             }
           },
           required: ["analysis", "suggestedFix", "explanation"]
@@ -55,7 +58,12 @@ export const analyzeIssueWithGemini = async (issue: SastIssue): Promise<AIFixRes
     const text = response.text;
     if (!text) throw new Error("No response from AI");
     
-    return JSON.parse(text) as AIFixResponse;
+    const result = JSON.parse(text) as AIFixResponse;
+    
+    // Clean up if the model includes backticks despite instructions
+    result.suggestedFix = result.suggestedFix.replace(/^```\w*\n?/, '').replace(/\n?```$/, '');
+    
+    return result;
   } catch (error) {
     console.error("Gemini Analysis Error:", error);
     throw new Error("Failed to generate AI fix suggestion.");
