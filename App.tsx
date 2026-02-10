@@ -7,7 +7,10 @@ import { IntegrationSettings } from './components/IntegrationSettings';
 import { NewProject } from './components/NewProject';
 import { GitManager } from './components/GitManager';
 import { RulesetConfig } from './components/RulesetConfig';
-import { MOCK_PROJECTS } from './services/mockData';
+import { Settings } from './components/Settings';
+import { ActivityLog } from './components/ActivityLog';
+import { NotificationPanel } from './components/NotificationPanel';
+import { MOCK_PROJECTS, MOCK_NOTIFICATIONS } from './services/mockData';
 import { SastIssue, Project } from './types';
 import { ChevronDown, Folder, Check, Bell, UserCircle } from 'lucide-react';
 
@@ -18,8 +21,10 @@ export default function App() {
   const [selectedProjectId, setSelectedProjectId] = useState<string>(MOCK_PROJECTS[0].id);
   const [selectedIssue, setSelectedIssue] = useState<SastIssue | null>(null);
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const activeProject = projects.find(p => p.id === selectedProjectId) || projects[0];
+  const unreadNotifications = MOCK_NOTIFICATIONS.filter(n => !n.read).length;
 
   const handleAddProject = (newProjData: Omit<Project, 'id' | 'issues' | 'lastScan'>) => {
     const newProject: Project = {
@@ -37,8 +42,6 @@ export default function App() {
     setSelectedProjectId(projectId);
     setSelectedIssue(null);
     setIsProjectDropdownOpen(false);
-    // Optional: Reset view to dashboard when switching projects
-    // setCurrentView('dashboard');
   };
 
   const renderContent = () => {
@@ -66,6 +69,12 @@ export default function App() {
             onSelectIssue={setSelectedIssue} 
           />
         );
+      case 'activity':
+        return (
+          <div className="h-full overflow-y-auto">
+            <ActivityLog />
+          </div>
+        );
       case 'repository':
         return (
           <div className="h-full overflow-y-auto">
@@ -88,7 +97,11 @@ export default function App() {
             </div>
         );
       case 'settings':
-          return <div className="p-8 text-slate-400 h-full overflow-y-auto">System settings placeholder</div>
+          return (
+            <div className="h-full overflow-y-auto">
+              <Settings />
+            </div>
+          );
       case 'rules':
           return (
              <div className="h-full overflow-y-auto">
@@ -154,7 +167,10 @@ export default function App() {
                                                 : 'text-slate-300 hover:bg-slate-700 hover:text-white'
                                             }`}
                                         >
-                                            <span className="truncate flex-1 text-left">{project.name}</span>
+                                            <div className="flex-1 text-left">
+                                              <span className="block truncate">{project.name}</span>
+                                              <span className="text-xs text-slate-500">{project.issues.length} issues</span>
+                                            </div>
                                             {selectedProjectId === project.id && <Check className="w-4 h-4 ml-2" />}
                                         </button>
                                     ))}
@@ -178,10 +194,23 @@ export default function App() {
             </div>
 
             <div className="flex items-center space-x-4">
-                <button className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative">
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-slate-900"></span>
-                </button>
+                <div className="relative">
+                  <button 
+                    onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative"
+                  >
+                      <Bell className="w-5 h-5" />
+                      {unreadNotifications > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white border-2 border-slate-900">
+                          {unreadNotifications}
+                        </span>
+                      )}
+                  </button>
+                  <NotificationPanel 
+                    isOpen={isNotificationOpen} 
+                    onClose={() => setIsNotificationOpen(false)} 
+                  />
+                </div>
                 <div className="h-6 w-px bg-slate-800"></div>
                 <button className="flex items-center space-x-2 text-sm font-medium text-slate-400 hover:text-white transition-colors">
                     <UserCircle className="w-6 h-6" />
