@@ -1,6 +1,6 @@
 import React from 'react';
 import { Project, SastIssue, Severity, IssueStatus } from '../types';
-import { AlertCircle, FileCode, ChevronRight, CheckCircle2, Search, BrainCircuit, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertCircle, FileCode, ChevronRight, CheckCircle2, Search, BrainCircuit, ChevronDown, ChevronUp, Filter } from 'lucide-react';
 
 interface IssueListProps {
   project: Project;
@@ -10,7 +10,9 @@ interface IssueListProps {
 export const IssueList: React.FC<IssueListProps> = ({ project, onSelectIssue }) => {
   const [filter, setFilter] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState<IssueStatus | 'All'>('All');
+  const [severityFilter, setSeverityFilter] = React.useState<Set<Severity>>(new Set());
   const [expandedInsights, setExpandedInsights] = React.useState<Set<string>>(new Set());
+  const [showSeverityFilter, setShowSeverityFilter] = React.useState(false);
 
   const toggleInsight = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -25,11 +27,25 @@ export const IssueList: React.FC<IssueListProps> = ({ project, onSelectIssue }) 
     });
   };
 
+  const toggleSeverity = (severity: Severity) => {
+    setSeverityFilter(prev => {
+      const next = new Set(prev);
+      if (next.has(severity)) {
+        next.delete(severity);
+      } else {
+        next.add(severity);
+      }
+      return next;
+    });
+  };
+
   const filteredIssues = project.issues.filter(issue => {
     const matchesSearch = issue.title.toLowerCase().includes(filter.toLowerCase()) || 
-      issue.filePath.toLowerCase().includes(filter.toLowerCase());
+      issue.filePath.toLowerCase().includes(filter.toLowerCase()) ||
+      issue.ruleId.toLowerCase().includes(filter.toLowerCase());
     const matchesStatus = statusFilter === 'All' || issue.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesSeverity = severityFilter.size === 0 || severityFilter.has(issue.severity);
+    return matchesSearch && matchesStatus && matchesSeverity;
   });
 
   const getSeverityColor = (severity: Severity) => {
@@ -41,12 +57,31 @@ export const IssueList: React.FC<IssueListProps> = ({ project, onSelectIssue }) 
     }
   };
 
+  const getStatusIcon = (status: IssueStatus) => {
+    switch (status) {
+      case IssueStatus.OPEN: return <span className="w-2 h-2 rounded-full bg-red-500 inline-block"></span>;
+      case IssueStatus.IN_PROGRESS: return <span className="w-2 h-2 rounded-full bg-yellow-500 inline-block animate-pulse"></span>;
+      case IssueStatus.RESOLVED: return <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>;
+      case IssueStatus.IGNORED: return <span className="w-2 h-2 rounded-full bg-slate-500 inline-block"></span>;
+    }
+  };
+
   const tabs = ['All', ...Object.values(IssueStatus)];
+
+  const severityOptions = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW];
 
   return (
     <div className="p-8 h-full flex flex-col">
       <div className="flex flex-col space-y-4 mb-6">
-        <h2 className="text-2xl font-bold text-white">Vulnerabilities</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-white">Vulnerabilities</h2>
+          <div className="flex items-center space-x-2 text-sm text-slate-500">
+            <span>{filteredIssues.length}</span>
+            <span>of</span>
+            <span>{project.issues.length}</span>
+            <span>issues</span>
+          </div>
+        </div>
         
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             {/* Status Tabs */}
@@ -66,16 +101,69 @@ export const IssueList: React.FC<IssueListProps> = ({ project, onSelectIssue }) 
                 ))}
             </div>
 
-            {/* Search */}
-            <div className="relative w-full sm:w-auto">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-4 h-4" />
-                <input 
-                    type="text" 
-                    placeholder="Search issues..." 
-                    className="bg-slate-800 border border-slate-700 text-slate-200 pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-full sm:w-64"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                />
+            <div className="flex items-center space-x-3">
+              {/* Severity Filter */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowSeverityFilter(!showSeverityFilter)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    severityFilter.size > 0
+                      ? 'bg-blue-600/10 border-blue-500 text-blue-400'
+                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-white'
+                  }`}
+                >
+                  <Filter className="w-4 h-4" />
+                  <span>Severity</span>
+                  {severityFilter.size > 0 && (
+                    <span className="bg-blue-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{severityFilter.size}</span>
+                  )}
+                </button>
+
+                {showSeverityFilter && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowSeverityFilter(false)}></div>
+                    <div className="absolute top-full right-0 mt-2 w-52 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-20 p-3 animate-fade-in">
+                      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Filter by Severity</div>
+                      {severityOptions.map(sev => (
+                        <label
+                          key={sev}
+                          className="flex items-center space-x-3 px-2 py-2 rounded-lg hover:bg-slate-700/50 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={severityFilter.has(sev)}
+                            onChange={() => toggleSeverity(sev)}
+                            className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+                          />
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getSeverityColor(sev)}`}>
+                            {sev}
+                          </span>
+                        </label>
+                      ))}
+                      {severityFilter.size > 0 && (
+                        <button
+                          onClick={() => setSeverityFilter(new Set())}
+                          className="w-full text-xs text-slate-400 hover:text-white mt-2 py-1.5 text-center transition-colors"
+                        >
+                          Clear filters
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Search */}
+              <div className="relative w-full sm:w-auto">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-4 h-4" />
+                  <input 
+                      type="text" 
+                      placeholder="Search issues..." 
+                      className="bg-slate-800 border border-slate-700 text-slate-200 pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-full sm:w-64"
+                      value={filter}
+                      onChange={(e) => setFilter(e.target.value)}
+                  />
+              </div>
             </div>
         </div>
       </div>
@@ -140,8 +228,11 @@ export const IssueList: React.FC<IssueListProps> = ({ project, onSelectIssue }) 
                   <td className="px-6 py-4 align-top text-slate-400 text-sm">
                     {issue.toolName}
                   </td>
-                   <td className="px-6 py-4 align-top text-slate-400 text-sm">
-                    {issue.status}
+                  <td className="px-6 py-4 align-top">
+                    <div className="flex items-center space-x-2 text-sm text-slate-400">
+                      {getStatusIcon(issue.status)}
+                      <span>{issue.status}</span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 align-middle text-right">
                     <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-blue-400 transition-colors ml-auto" />

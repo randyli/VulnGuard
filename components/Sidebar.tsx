@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, LayoutDashboard, GitGraph, Settings, Code2, Plus, GitBranch } from 'lucide-react';
+import { ShieldAlert, LayoutDashboard, GitGraph, Settings, Code2, Plus, GitBranch, Activity } from 'lucide-react';
 
 interface SidebarProps {
   currentView: string;
@@ -10,6 +10,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'issues', label: 'Vulnerabilities', icon: ShieldAlert },
+    { id: 'activity', label: 'Activity Log', icon: Activity },
     { id: 'repository', label: 'Repository', icon: GitBranch },
     { id: 'integrations', label: 'Integrations', icon: GitGraph },
     { id: 'rules', label: 'Rulesets', icon: Code2 },
@@ -35,7 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
         </button>
       </div>
 
-      <nav className="flex-1 px-4 space-y-2 mt-4">
+      <nav className="flex-1 px-4 space-y-1 mt-4 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.id;
@@ -46,7 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
                 isActive 
                   ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20' 
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                  : 'text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent'
               }`}
             >
               <Icon size={20} />
